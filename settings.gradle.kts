@@ -19,3 +19,18 @@ for (platform in listOf("common", "fabric", "neoforge")) {
 }
 
 includeBuild("build-logic")
+
+// During the 26.2 port, consume the sibling Flywheel fork rather than an
+// unpublished 26.2 Maven artifact. Published coordinates remain authoritative
+// for normal downstream consumers.
+val flywheelDirectory = file("../Flywheel")
+if (flywheelDirectory.isDirectory) {
+    includeBuild(flywheelDirectory) {
+        dependencySubstitution {
+            substitute(module("dev.engine-room.flywheel:flywheel-neoforge-api-26.2")).using(project(":neoforge"))
+            substitute(module("dev.engine-room.flywheel:flywheel-neoforge-26.2")).using(project(":neoforge"))
+            substitute(module("dev.engine-room.flywheel:flywheel-fabric-api-26.2")).using(project(":fabric"))
+            substitute(module("dev.engine-room.flywheel:flywheel-fabric-26.2")).using(project(":fabric"))
+        }
+    }
+}
