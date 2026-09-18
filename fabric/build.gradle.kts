@@ -23,10 +23,6 @@ loom {
     }
 }
 
-tasks.runClientRenderDoc {
-    renderDocExecutable = file("/usr/bin/renderdoccmd")
-}
-
 dependencies {
     minecraft(libs.minecraft)
     api(libs.bundles.fabric)
