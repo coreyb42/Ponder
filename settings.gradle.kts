@@ -11,7 +11,14 @@ plugins {
 
 rootProject.name = "ponder"
 
-for (platform in listOf("common", "fabric", "neoforge")) {
+// A parent NeoForge build needs only Ponder's common and NeoForge projects.
+// Gradle does not propagate nested composite-build substitutions to Ponder's
+// Fabric projects, so configuring them here would incorrectly attempt to
+// resolve unpublished Flywheel artifacts. Standalone Ponder builds retain all
+// platforms and continue to validate Fabric normally.
+val configuredPlatforms = if (gradle.parent == null) listOf("common", "fabric", "neoforge") else listOf("common", "neoforge")
+
+for (platform in configuredPlatforms) {
     include(platform)
 
     include(":catnip:$platform")
