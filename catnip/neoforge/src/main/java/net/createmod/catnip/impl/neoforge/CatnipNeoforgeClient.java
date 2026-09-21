@@ -6,7 +6,6 @@ import net.createmod.catnip.api.Catnip;
 import net.createmod.catnip.api.client.command.ClientCommands;
 import net.createmod.catnip.api.client.event.AtlasStitchedCallback;
 import net.createmod.catnip.api.client.event.ClientTickCallback;
-import net.createmod.catnip.api.client.event.LevelRenderCallback;
 import net.createmod.catnip.impl.client.CatnipClient;
 import net.createmod.catnip.impl.neoforge.service.NeoForgeClientHooksHelper;
 import net.createmod.catnip.impl.neoforge.service.NeoForgeRenderPipelineRegistry;
@@ -23,7 +22,7 @@ import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 
 @Mod(value = Catnip.ID, dist = Dist.CLIENT)
@@ -82,10 +81,8 @@ public final class CatnipNeoforgeClient {
 		}
 
 		@SubscribeEvent
-		public static void onRenderLevel(RenderLevelStageEvent.AfterTranslucentFeatures event) {
-			LevelRenderCallback.AFTER_TRANSLUCENT_FEATURES.invoker().onRender(
-				event.getLevelRenderer(), event.getLevelRenderState(), event.getPoseStack()
-			);
+		public static void submitCustomGeometry(SubmitCustomGeometryEvent event) {
+			CatnipClient.submitLevelGeometry(event.getLevelRenderState(), event.getSubmitNodeCollector(), event.getPoseStack());
 		}
 
 		@SubscribeEvent

@@ -6,7 +6,6 @@ import net.createmod.catnip.api.Catnip;
 import net.createmod.catnip.api.client.animation.AnimationTickHolder;
 import net.createmod.catnip.api.client.event.AtlasStitchedCallback;
 import net.createmod.catnip.api.client.event.ClientTickCallback;
-import net.createmod.catnip.api.client.event.LevelRenderCallback;
 import net.createmod.catnip.api.client.event.LevelRendererReloadCallback;
 import net.createmod.catnip.api.client.ghostblock.GhostBlocks;
 import net.createmod.catnip.api.client.gui.HudElements;
@@ -27,7 +26,7 @@ import net.createmod.catnip.impl.client.gui.element.pip.GuiBlockModelRenderer;
 import net.createmod.catnip.impl.client.gui.element.pip.GuiFluidStateRenderer;
 import net.createmod.catnip.impl.client.placement.PlacementClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.phys.Vec3;
 
@@ -42,7 +41,6 @@ public final class CatnipClient {
 
 		ClientTickCallback.EVENT.pre().subscribe(CatnipClient::beforeClientTick);
 		LevelRendererReloadCallback.EVENT.subscribe(CatnipClient::onRendererReload);
-		LevelRenderCallback.AFTER_TRANSLUCENT_FEATURES.subscribe(CatnipClient::onLevelRender);
 		AtlasStitchedCallback.EVENT.subscribe(StitchedSprite::afterAtlasStitch);
 
 		ModClientHooksHelper.INSTANCE.registerPictureInPictureRenderer(GuiBlockModelRenderState.class, GuiBlockModelRenderer::new);
@@ -70,12 +68,12 @@ public final class CatnipClient {
 		SuperByteBufferCache.getInstance().invalidate();
 	}
 
-	public static void onLevelRender(LevelRenderer renderer, LevelRenderState state, PoseStack transforms) {
-		Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().position();
+	public static void submitLevelGeometry(LevelRenderState state, OrderedSubmitNodeCollector submitNodes, PoseStack transforms) {
+		Vec3 cameraPos = state.cameraRenderState.pos;
 		float partialTicks = AnimationTickHolder.getPartialTicks();
 
 		transforms.pushPose();
-		SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
+		SuperRenderTypeBuffer buffer = new DefaultSuperRenderTypeBuffer(submitNodes);
 
 		GhostBlocks.getInstance().renderAll(transforms, buffer, cameraPos);
 		Outliner.getInstance().renderOutlines(transforms, buffer, cameraPos, partialTicks);

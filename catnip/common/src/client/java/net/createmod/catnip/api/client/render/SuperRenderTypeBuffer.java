@@ -2,11 +2,18 @@ package net.createmod.catnip.api.client.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
-public interface SuperRenderTypeBuffer extends MultiBufferSource {
+/**
+ * Collects custom level geometry for submission through Minecraft's 26.2 render graph.
+ *
+ * <p>This deliberately is not a {@code MultiBufferSource}. Immediate render buffers were
+ * removed with the render-state extraction work: geometry must be handed to an
+ * {@link net.minecraft.client.renderer.OrderedSubmitNodeCollector} while a level frame is
+ * being assembled.</p>
+ */
+public interface SuperRenderTypeBuffer {
 	VertexConsumer getEarlyBuffer(RenderType type);
 
 	VertexConsumer getBuffer(RenderType type);
