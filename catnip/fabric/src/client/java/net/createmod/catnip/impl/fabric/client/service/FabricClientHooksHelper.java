@@ -2,7 +2,7 @@ package net.createmod.catnip.impl.fabric.client.service;
 
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -26,8 +26,6 @@ import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
@@ -65,8 +63,8 @@ public class FabricClientHooksHelper implements ModClientHooksHelper {
 	}
 
 	@Override
-	public void registerPictureInPictureRenderer(Class<?> stateClass, Function<BufferSource, PictureInPictureRenderer<?>> factory) {
-		PictureInPictureRendererRegistry.register(ctx -> factory.apply(ctx.bufferSource()));
+	public void registerPictureInPictureRenderer(Class<?> stateClass, Supplier<PictureInPictureRenderer<?>> factory) {
+		PictureInPictureRendererRegistry.register(ctx -> factory.get());
 	}
 
 	@Override
@@ -77,11 +75,6 @@ public class FabricClientHooksHelper implements ModClientHooksHelper {
 	@Override
 	public void submitFullFluidState(PoseStack ms, OrderedSubmitNodeCollector submitNode, FluidState fluid) {
 		FluidRenderHelper.submitFluidBox(fluid, 0, 0, 0, 1, 1, 1, submitNode, ms, LightCoordsUtil.FULL_BRIGHT, false, true);
-	}
-
-	@Override
-	public void renderFullFluidState(PoseStack ms, MultiBufferSource.BufferSource buffer, FluidState fluid) {
-		FluidRenderHelper.renderFluidBox(fluid, 0, 0, 0, 1, 1, 1, buffer, ms, LightCoordsUtil.FULL_BRIGHT, false, true);
 	}
 
 	@Override

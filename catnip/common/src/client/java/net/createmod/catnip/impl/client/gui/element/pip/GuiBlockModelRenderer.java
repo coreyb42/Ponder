@@ -1,53 +1,42 @@
 package net.createmod.catnip.impl.client.gui.element.pip;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.createmod.catnip.api.client.gui.render.pip.GuiBlockModelRenderState;
-import net.createmod.catnip.api.client.level.SinglePosVirtualBlockGetter;
-import net.createmod.catnip.api.client.render.model.BakedModelBufferer;
-import net.createmod.catnip.impl.client.render.ColoringVertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.ARGB;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.RandomSource;
 
 public class GuiBlockModelRenderer extends PictureInPictureRenderer<GuiBlockModelRenderState> {
-	public GuiBlockModelRenderer(BufferSource bufferSource) {
-		super(bufferSource);
-	}
-
 	@Override
 	public Class<GuiBlockModelRenderState> getRenderStateClass() {
 		return GuiBlockModelRenderState.class;
 	}
 
 	@Override
-	protected void renderToTexture(GuiBlockModelRenderState renderState, PoseStack poseStack) {
-		SinglePosVirtualBlockGetter level = SinglePosVirtualBlockGetter.createFullBright();
-		level.blockState(renderState.state());
-		level.blockEntity(renderState.blockEntity());
+	protected void renderToTexture(GuiBlockModelRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
+		var model = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(renderState.state());
+		List<BlockStateModelPart> parts = new ArrayList<>();
+		model.collectParts(RandomSource.create(renderState.state().getSeed(net.minecraft.core.BlockPos.ZERO)), parts);
 
-		int color = renderState.color();
-		BakedModelBufferer.bufferModel(Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(renderState.state()), BlockPos.ZERO, level, renderState.state(),
-			poseStack, (layer, shade) -> {
-				RenderType type = layer == ChunkSectionLayer.TRANSLUCENT
-					? Sheets.translucentBlockItemSheet()
-					: Sheets.cutoutBlockSheet();
-
-				return new ColoringVertexConsumer(
-					bufferSource.getBuffer(type),
-					ARGB.red(color) / 255f,
-					ARGB.green(color) / 255f,
-					ARGB.blue(color) / 255f,
-					1);
-			}
-		);
-
-		bufferSource.endBatch();
+		int[] tints = new int[32];
+		Arrays.fill(tints, renderState.color());
+		RenderType type = model.hasMaterialFlag(BakedQuad.FLAG_TRANSLUCENT)
+			? Sheets.translucentBlockItemSheet()
+			: Sheets.cutoutBlockItemSheet();
+		submitNodeCollector.submitBlockModel(poseStack, type, parts, tints,
+			LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
 	}
 
 	@Override
