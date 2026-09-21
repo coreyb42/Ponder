@@ -30,6 +30,10 @@ neoForge {
 }
 
 dependencies {
-    api(libs.flywheel.neoforge.api)
+    api(libs.flywheel.neoforge.api) {
+        attributes {
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+        }
+    }
     runtimeOnly(libs.flywheel.neoforge.asProvider())
 }
