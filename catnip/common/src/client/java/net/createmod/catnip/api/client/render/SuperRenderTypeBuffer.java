@@ -3,6 +3,7 @@ package net.createmod.catnip.api.client.render;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 /**
@@ -10,10 +11,18 @@ import net.minecraft.client.renderer.rendertype.RenderType;
  *
  * <p>This deliberately is not a {@code MultiBufferSource}. Immediate render buffers were
  * removed with the render-state extraction work: geometry must be handed to an
- * {@link net.minecraft.client.renderer.OrderedSubmitNodeCollector} while a level frame is
+ * {@link SubmitNodeCollector} while a level frame is
  * being assembled.</p>
  */
 public interface SuperRenderTypeBuffer {
+	/**
+	 * The frame-local render-graph collector backing this buffer.
+	 *
+	 * <p>Use this for Minecraft render states (such as item render states) which
+	 * submit their own feature nodes rather than vertex data.</p>
+	 */
+	SubmitNodeCollector submitNodes();
+
 	VertexConsumer getEarlyBuffer(RenderType type);
 
 	VertexConsumer getBuffer(RenderType type);

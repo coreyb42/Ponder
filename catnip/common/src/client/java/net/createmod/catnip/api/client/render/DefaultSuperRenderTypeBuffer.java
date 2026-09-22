@@ -8,20 +8,21 @@ import java.util.Map;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 /** Frame-local custom geometry collector backed by Minecraft's 26.2 render graph. */
 public final class DefaultSuperRenderTypeBuffer implements SuperRenderTypeBuffer {
-	private final OrderedSubmitNodeCollector submitNodes;
+	private final SubmitNodeCollector submitNodes;
 	private final SuperRenderTypeBufferPhase earlyBuffer = new SuperRenderTypeBufferPhase();
 	private final SuperRenderTypeBufferPhase defaultBuffer = new SuperRenderTypeBufferPhase();
 	private final SuperRenderTypeBufferPhase lateBuffer = new SuperRenderTypeBufferPhase();
 
-	public DefaultSuperRenderTypeBuffer(OrderedSubmitNodeCollector submitNodes) {
+	public DefaultSuperRenderTypeBuffer(SubmitNodeCollector submitNodes) {
 		this.submitNodes = submitNodes;
 	}
 
+	@Override public SubmitNodeCollector submitNodes() { return submitNodes; }
 	@Override public VertexConsumer getEarlyBuffer(RenderType type) { return earlyBuffer.get(type); }
 	@Override public VertexConsumer getBuffer(RenderType type) { return defaultBuffer.get(type); }
 	@Override public VertexConsumer getLateBuffer(RenderType type) { return lateBuffer.get(type); }
@@ -47,18 +48,18 @@ public final class DefaultSuperRenderTypeBuffer implements SuperRenderTypeBuffer
 			return buffers.computeIfAbsent(type, $ -> new DeferredVertexConsumer());
 		}
 
-		private void submit(OrderedSubmitNodeCollector submitNodes) {
+		private void submit(SubmitNodeCollector submitNodes) {
 			buffers.forEach((type, vertices) -> submit(submitNodes, type, vertices));
 			buffers.clear();
 		}
 
-		private void submit(OrderedSubmitNodeCollector submitNodes, RenderType type) {
+		private void submit(SubmitNodeCollector submitNodes, RenderType type) {
 			DeferredVertexConsumer vertices = buffers.remove(type);
 			if (vertices != null)
 				submit(submitNodes, type, vertices);
 		}
 
-		private static void submit(OrderedSubmitNodeCollector submitNodes, RenderType type, DeferredVertexConsumer vertices) {
+		private static void submit(SubmitNodeCollector submitNodes, RenderType type, DeferredVertexConsumer vertices) {
 			if (!vertices.isEmpty())
 				submitNodes.submitCustomGeometry(new PoseStack(), type, (pose, output) -> vertices.replay(output));
 		}

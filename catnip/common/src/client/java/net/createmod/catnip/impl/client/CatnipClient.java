@@ -26,7 +26,7 @@ import net.createmod.catnip.impl.client.gui.element.pip.GuiBlockModelRenderer;
 import net.createmod.catnip.impl.client.gui.element.pip.GuiFluidStateRenderer;
 import net.createmod.catnip.impl.client.placement.PlacementClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.phys.Vec3;
 
@@ -68,7 +68,7 @@ public final class CatnipClient {
 		SuperByteBufferCache.getInstance().invalidate();
 	}
 
-	public static void submitLevelGeometry(LevelRenderState state, OrderedSubmitNodeCollector submitNodes, PoseStack transforms) {
+	public static void submitLevelGeometry(LevelRenderState state, SubmitNodeCollector submitNodes, PoseStack transforms) {
 		Vec3 cameraPos = state.cameraRenderState.pos;
 		float partialTicks = AnimationTickHolder.getPartialTicks();
 
