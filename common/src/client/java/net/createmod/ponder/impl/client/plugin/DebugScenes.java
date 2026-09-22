@@ -13,16 +13,21 @@ import net.createmod.ponder.api.client.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.client.scene.Selection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class DebugScenes {
+	private static Block block(String name) {
+		return BuiltInRegistries.BLOCK.getValue(Identifier.withDefaultNamespace(name));
+	}
 
 	private static int index;
 
@@ -87,7 +92,7 @@ public class DebugScenes {
 			.text("Blocks can be modified");
 		scene.idle(20);
 		scene.world().replaceBlocks(util.select().fromTo(1, 1, 3, 2, 2, 4),
-			Blocks.WHITE_CONCRETE.defaultBlockState(), true);
+			block("white_concrete").defaultBlockState(), true);
 		scene.idle(10);
 		scene.addKeyframe();
 		scene.world().replaceBlocks(util.select().position(3, 1, 1), Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.POWER, 15), true);
@@ -367,7 +372,7 @@ public class DebugScenes {
 
 		scene.world().hideSection(hiddenReplaceArea, Direction.UP);
 		scene.idle(20);
-		scene.world().setBlocks(hiddenReplaceArea, Blocks.BLACK_CONCRETE.defaultBlockState(), false);
+		scene.world().setBlocks(hiddenReplaceArea, block("black_concrete").defaultBlockState(), false);
 		scene.world().showSection(hiddenReplaceArea, Direction.DOWN);
 		scene.idle(20);
 		scene.overlay().showOutlineWithText(hiddenReplaceArea, 30)

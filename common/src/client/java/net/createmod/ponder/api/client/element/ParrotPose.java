@@ -10,8 +10,9 @@ import net.createmod.ponder.impl.client.gui.PonderUI;
 import net.createmod.ponder.impl.mixin.ParrotAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,10 +28,18 @@ public abstract class ParrotPose {
 	public abstract void tick(PonderScene scene, Parrot entity, Vec3 location);
 
 	public Parrot create(PonderLevel world) {
-		Parrot entity = new Parrot(EntityType.PARROT, world);
+		Parrot entity = BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.withDefaultNamespace("parrot"))
+			.filter(type -> Parrot.class.isAssignableFrom(type.getBaseClass()))
+			.map(type -> new Parrot(castParrotType(type), world))
+			.orElseThrow(() -> new IllegalStateException("Missing vanilla parrot entity type"));
 		int nextInt = Ponder.RANDOM.nextInt(VARIANTS.length);
 		((ParrotAccessor) entity).ponder$setVariant(VARIANTS[nextInt]);
 		return entity;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static net.minecraft.world.entity.EntityType<? extends Parrot> castParrotType(net.minecraft.world.entity.EntityType<?> type) {
+		return (net.minecraft.world.entity.EntityType<? extends Parrot>) type;
 	}
 
 	public static class DancePose extends ParrotPose {
