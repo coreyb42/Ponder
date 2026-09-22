@@ -13,37 +13,23 @@ import net.createmod.catnip.api.client.render.SuperRenderTypeBuffer;
 import net.createmod.catnip.api.theme.Color;
 import net.createmod.ponder.api.client.scene.PonderScene;
 import net.createmod.ponder.api.client.scene.PonderScene.SceneTransform;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
-import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 
 public class PonderSceneRenderer extends PictureInPictureRenderer<PonderSceneRenderState> {
-	public PonderSceneRenderer(BufferSource bufferSource) {
-		super(bufferSource);
-	}
-
 	@Override
-	protected void renderToTexture(PonderSceneRenderState state, PoseStack poseStack) {
-		Minecraft mc = Minecraft.getInstance();
-		GameRenderer gameRenderer = mc.gameRenderer;
-		FeatureRenderDispatcher renderDispatcher = gameRenderer.getFeatureRenderDispatcher();
-
-		SubmitNodeStorage queue = renderDispatcher.getSubmitNodeStorage();
+	protected void renderToTexture(PonderSceneRenderState state, PoseStack poseStack, SubmitNodeCollector queue) {
 		poseStack.pushPose();
 		poseStack.setIdentity();
 
 		renderScene(state, poseStack, queue);
-		renderDispatcher.renderAllFeatures();
 
 		poseStack.popPose();
 	}
 
-	private void renderScene(PonderSceneRenderState state, PoseStack poseStack, SubmitNodeStorage queue) {
+	private void renderScene(PonderSceneRenderState state, PoseStack poseStack, SubmitNodeCollector queue) {
 		float partialTicks = state.partialTicks();
-		SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
+		SuperRenderTypeBuffer buffer = new DefaultSuperRenderTypeBuffer(queue);
 		PonderScene scene = state.scene();
 
 		poseStack.pushPose();
@@ -77,11 +63,11 @@ public class PonderSceneRenderer extends PictureInPictureRenderer<PonderSceneRen
 				if (flash > 0) {
 					poseStack.pushPose();
 					poseStack.scale(1, .5f + flash * .75f, 1);
-					fillGradient(poseStack, 0, -1, -scene.getBasePlateSize(), 0, new Color(0x00_c6ffc9).getRGB(), new Color(0xaa_c6ffc9).scaleAlpha(alpha).getRGB());
+					fillGradient(buffer, poseStack, 0, -1, -scene.getBasePlateSize(), 0, new Color(0x00_c6ffc9).getRGB(), new Color(0xaa_c6ffc9).scaleAlpha(alpha).getRGB());
 					poseStack.popPose();
 				}
 				poseStack.translate(0, 0, 2 / 1024f);
-				fillGradient(poseStack, 0, 0, -scene.getBasePlateSize(), 4, new Color(0x66_000000).getRGB(), new Color(0x00_000000).getRGB());
+				fillGradient(buffer, poseStack, 0, 0, -scene.getBasePlateSize(), 4, new Color(0x66_000000).getRGB(), new Color(0x00_000000).getRGB());
 				poseStack.popPose();
 				poseStack.mulPose(Axis.YP.rotationDegrees(-90));
 			}
@@ -141,6 +127,7 @@ public class PonderSceneRenderer extends PictureInPictureRenderer<PonderSceneRen
 	}
 
 	private void fillGradient(
+		SuperRenderTypeBuffer renderBuffer,
 		PoseStack poseStack,
 		int x0,
 		int y0,
@@ -149,7 +136,7 @@ public class PonderSceneRenderer extends PictureInPictureRenderer<PonderSceneRen
 		int col1,
 		int col2
 	) {
-		VertexConsumer buffer = bufferSource.getBuffer(PonderRenderTypes.gui());
+		VertexConsumer buffer = renderBuffer.getBuffer(PonderRenderTypes.gui());
 		Matrix4f pose = poseStack.last().pose();
 		buffer.addVertex(pose, x0, y0, 0).setColor(col1);
 		buffer.addVertex(pose, x0, y1, 0).setColor(col2);

@@ -50,6 +50,7 @@ import net.createmod.ponder.impl.client.registration.PonderLocalization;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -261,7 +262,7 @@ public class PonderScene {
 		activeSchedule.add(new HideAllInstruction(10, null));
 	}
 
-	public void renderScene(SuperRenderTypeBuffer buffer, SubmitNodeStorage queue, PoseStack poseStack, float pt) {
+	public void renderScene(SuperRenderTypeBuffer buffer, SubmitNodeCollector queue, PoseStack poseStack, float pt) {
 		Minecraft mc = Minecraft.getInstance();
 
 		poseStack.pushPose();
@@ -283,7 +284,8 @@ public class PonderScene {
 
 		forEachVisible(PonderSceneElement.class, e -> e.renderLast(world, buffer, queue, camera, cameraRenderState, poseStack, pt));
 		world.renderEntities(poseStack, queue, camera, cameraRenderState, pt);
-		world.renderParticles(poseStack, queue, camera, cameraRenderState, pt);
+		if (queue instanceof SubmitNodeStorage storage)
+			world.renderParticles(poseStack, storage, camera, cameraRenderState, pt);
 		outliner.renderOutlines(poseStack, buffer, Vec3.ZERO, pt);
 
 		poseStack.popPose();
