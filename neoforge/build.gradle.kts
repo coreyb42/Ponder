@@ -32,7 +32,15 @@ neoForge {
 }
 
 dependencies {
-    api(project(":catnip:neoforge"))
+    // The published Ponder module exposes Catnip as an API dependency. In a
+    // parent composite, Create resolves Catnip directly to its merged jar;
+    // keeping this edge compile-only prevents Gradle from selecting Catnip's
+    // incomplete classes-directory secondary variant first.
+    if (gradle.parent == null) {
+        api(project(":catnip:neoforge"))
+    } else {
+        compileOnly(project(":catnip:neoforge"))
+    }
     api(libs.flywheel.neoforge.api)
     runtimeOnly(libs.flywheel.neoforge.asProvider())
 }
